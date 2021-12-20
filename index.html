@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Beauty</title>
+</head>
+
+
+
+<body @vue:mounted="mounted">
+  <!-- Loading Animation -->
+  <div id="loading">
+    <div class="ball-scale-multiple">
+      <div></div>
+      <div></div>
+      <div></div>
+    </div>
+  </div>
+
+  <!-- Waterfalls flow -->
+  <div class="waterfall">
+    <div v-for="item in imagesList" class="item">
+      <div class="spin"></div>
+      <img :src="item" @click="clickEnlarge($event)" alt="">
+    </div>
+  </div>
+  <script type="module" src="/main.js"></script>
+</body>
+
+</html>

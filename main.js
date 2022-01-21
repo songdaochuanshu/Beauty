@@ -1,3 +1,12 @@
+/*
+ * @Descripttion: 
+ * @version: 
+ * @Author: MiKin
+ * @Date: 2022-01-21 16:30:26
+ * @LastEditors: MiKin
+ * @LastEditTime: 2022-01-21 16:44:32
+ * @FilePath: \Beauty\main.js
+ */
 import './style.css'
 import { createApp } from 'petite-vue'
 
@@ -5,13 +14,25 @@ createApp({
 
   //data
   imagesList: [],
+  mode: 9,
 
   async mounted() {
+    this.keydown();
     await this.getImages(6);
     document.querySelector('#loading').remove()
     await this.onScroll();
   },
 
+  keydown() {
+    document.addEventListener('keydown', (e) => {
+      if (e.ctrlKey && e.keyCode === 73) {
+        let  person = prompt('Please enter the mode:', '66');
+        if (person) {
+          this.mode = person;
+        }
+      }
+    })
+  },
 
   //Drop the screen to add a picture
   async onScroll() {
@@ -33,7 +54,7 @@ createApp({
   //Get a picture
   async getImages(size = 3) {
     for (let i = 0; i < size; i++) {
-      let res = await fetch(`https://3650000.xyz/api/?type=json&mode=9`);
+      let res = await fetch(`https://3650000.xyz/api/?type=json&mode=${this.mode}&`);
       let data = await res.json();
       this.imagesList.push(data.url);
     }

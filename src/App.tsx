@@ -17,7 +17,7 @@ export default class App extends React.Component<IProps, IState>{
       imagesList: [],
       mode: '9',
       modeValue: '',
-      size: 50,
+      size: 80,
       scrollTop: 0,
       windowHeight: 0,
       scrollHeight: 0,

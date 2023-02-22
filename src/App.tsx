@@ -1,63 +1,48 @@
 import React from 'react';
 import './App.scss'
 
-interface IProps {
+interface IImage {
+  id: string;
+  author: string;
+  width: number;
+  height: number;
+  url: string;
+  download_url: string;
 }
 
 interface IState {
-  imagesList: string[];
-  mode: string;
-  size: number;
+  imagesList: IImage[];
+  loadedIds: Set<string>;
 }
 
-export default class App extends React.Component<IProps, IState>{
-  constructor(props: IProps) {
+export default class App extends React.Component<{}, IState> {
+  constructor(props: {}) {
     super(props);
     this.state = {
       imagesList: [],
-      mode: '9',
-      modeValue: '',
-      size: 80,
-      scrollTop: 0,
-      windowHeight: 0,
-      scrollHeight: 0,
-    } as IState;
+      loadedIds: new Set(),
+    };
   }
+
   componentDidMount() {
-    this.setState({
-      mode: this.getUrlParam('mode')
-    })
-    this.getImages(this.state.size);
-    this.onScroll(this.state.size);
-    this.keydown();
-  }
-  //Drop the screen to add a picture
-  onScroll = async (size: number) => {
-    window.onscroll = async () => {
-      //The variable scrolltop is scrolling the scroll bar, distance from the top
-      var scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
-      //Variables WindowHeight are the height of visible area
-      var windowHeight = document.documentElement.clientHeight || document.body.clientHeight;
-      //Variable scrollHeight is the total height of the scroll bar
-      var scrollHeight = document.documentElement.scrollHeight || document.body.scrollHeight;
-      //Conditions of scroll bars to the bottom
-      if ((scrollTop + windowHeight + 50) >= scrollHeight) {
-        // console.log("距顶部" + scrollTop + "可视区高度" + windowHeight + "滚动条总高度" + scrollHeight);
-        await this.getImages(size);
+    this.getImages(16, 1);
+    window.onscroll = () => {
+      if (window.innerHeight + window.scrollY >= document.body.scrollHeight - 500) {
+        const page = Math.floor(this.state.imagesList.length / 16) + 1;
+        this.getImages(16, page);
       }
-    }
+    };
   }
-  //Get a picture
-  async getImages(size = 1) {
-    for (let i = 0; i < size; i++) {
-      let res = await fetch(`https://3650000.xyz/api/?type=json&mode=${this.state.mode}&`);
-      let data = await res.json();
-      this.setState((state) => ({
-        imagesList: [...state.imagesList, data.url as never]
-      }))
-    }
+
+  async getImages(size = 16, page = 1) {
+    const response = await fetch(`https://picsum.photos/v2/list?page=${page}&limit=${size}`);
+    const data = await response.json();
+    this.setState((prevState) => ({
+      imagesList: [...prevState.imagesList, ...data.filter((image: { id: string; }) => !prevState.loadedIds.has(image.id))],
+      loadedIds: new Set([...prevState.loadedIds, ...data.map((image: { id: any; }) => image.id)]),
+    }));
   }
-  //Image click to enlarge
+
   clickEnlarge(e: any) {
     let div = document.createElement('div');
     let img = document.createElement('img');
@@ -103,41 +88,24 @@ export default class App extends React.Component<IProps, IState>{
     }
   }
 
-  // 获取地址栏参数
-  getUrlParam(name: string) {
-    let reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
-    let r = window.location.search.substr(1).match(reg) as any;
-    if (r != null) return unescape(r[2]); return '9';
-  }
-
-  keydown() {
-    document.addEventListener('keydown', (e) => {
-      if (e.ctrlKey && e.keyCode === 73) {
-        let person = prompt('Please enter the mode:', '66');
-        if (person) {
-          console.log(person);
-          this.setState({
-            mode: person
-          })
-          console.info(this.state.mode);
-        }
-      }
-    })
-  }
-
   render() {
+    const { imagesList } = this.state;
+
     return (
       <div>
         <div className="waterfall">
-          {this.state.imagesList.map((item: string | undefined, index: React.Key | null | undefined) => {
-            return (
-              <div key={index} className="image-box">
-                <img src={item} alt="" onClick={this.clickEnlarge} />
-              </div>
-            )
-          })}
+          {imagesList.map((image) => (
+            <div className="image-box" key={image.id}>
+              <img
+                onClick={this.clickEnlarge}
+                src={image.download_url}
+                width={image.width / 10}
+                height={image.height / 10}
+              />
+            </div>
+          ))}
         </div>
       </div>
-    )
+    );
   }
 }

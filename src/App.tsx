@@ -35,8 +35,9 @@ const App: React.FC = () => {
       const newImages: IImage[] = [];
       for (let i = 0; i < 12; i++) {
         const timestamp = Date.now() + i + Math.random();
-        // 使用 proxy=bd (百度代理) 解决防盗链问题，并且百度代理返回的是 https 协议，解决混合内容限制
-        const imageUrl = `https://3650000.xyz/api/?type=302&mode=${currentCategory.mode}&proxy=bd&_t=${timestamp}`;
+        // 尝试直接使用 API 提供的展示链接，或者使用 type=img 模式
+        // 很多时候 302 重定向在某些前端环境下会被拦截，直接使用 type=img 模式由服务端返回内容
+        const imageUrl = `https://3650000.xyz/api/?type=img&mode=${currentCategory.mode}&_t=${timestamp}`;
         newImages.push({
           id: `random-${timestamp}`,
           author: 'Beauty',

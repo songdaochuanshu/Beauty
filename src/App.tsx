@@ -13,7 +13,6 @@ interface IImage {
 const App: React.FC = () => {
   const [images, setImages] = useState<IImage[]>([]);
   const [loading, setLoading] = useState(false);
-  const [page, setPage] = useState(1);
   const [selectedImage, setSelectedImage] = useState<IImage | null>(null);
   const loaderRef = useRef<HTMLDivElement>(null);
 
@@ -21,16 +20,29 @@ const App: React.FC = () => {
     if (loading) return;
     setLoading(true);
     try {
-      const res = await fetch(`https://picsum.photos/v2/list?page=${page}&limit=20`);
-      const data = await res.json();
-      setImages((prev) => [...prev, ...data]);
-      setPage((prev) => prev + 1);
+      // 3650000.xyz API doesn't support pagination in the same way as picsum
+      // We'll fetch multiple images by calling the API multiple times or just one by one
+      // Since it's a random API, we'll fetch a batch of 10 random images
+      const newImages: IImage[] = [];
+      for (let i = 0; i < 10; i++) {
+        const timestamp = Date.now() + i;
+        const imageUrl = `https://3650000.xyz/api/?type=302&_t=${timestamp}`;
+        newImages.push({
+          id: `random-${timestamp}`,
+          author: '3650000.xyz',
+          width: 1920,
+          height: 1080,
+          url: imageUrl,
+          download_url: imageUrl
+        });
+      }
+      setImages((prev) => [...prev, ...newImages]);
     } catch (err) {
       console.error('Failed to fetch images:', err);
     } finally {
       setLoading(false);
     }
-  }, [page, loading]);
+  }, [loading]);
 
   useEffect(() => {
     fetchImages();
@@ -43,7 +55,7 @@ const App: React.FC = () => {
           fetchImages();
         }
       },
-      { threshold: 1.0 }
+      { threshold: 0.1 }
     );
 
     if (loaderRef.current) {
@@ -70,7 +82,7 @@ const App: React.FC = () => {
           transition={{ delay: 0.3 }}
           className="mt-4 text-neutral-400 font-light italic"
         >
-          A curated collection of visual aesthetics
+          A curated collection of visual aesthetics powered by 3650000.xyz
         </motion.p>
       </header>
 
@@ -145,7 +157,7 @@ const App: React.FC = () => {
                     {selectedImage.author}
                   </h3>
                   <p className="text-neutral-400 text-xs mt-1">
-                    {selectedImage.width} x {selectedImage.height} px
+                    Random Image from 3650000.xyz
                   </p>
                 </div>
                 <button 

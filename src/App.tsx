@@ -35,9 +35,8 @@ const App: React.FC = () => {
       const newImages: IImage[] = [];
       for (let i = 0; i < 12; i++) {
         const timestamp = Date.now() + i + Math.random();
-        // 尝试直接使用 API 提供的展示链接，或者使用 type=img 模式
-        // 很多时候 302 重定向在某些前端环境下会被拦截，直接使用 type=img 模式由服务端返回内容
-        const imageUrl = `https://3650000.xyz/api/?type=img&mode=${currentCategory.mode}&_t=${timestamp}`;
+        // 使用 type=302 重定向模式配合 proxy=wp 代理
+        const imageUrl = `https://3650000.xyz/api/?type=302&mode=${currentCategory.mode}&proxy=wp&_t=${timestamp}`;
         newImages.push({
           id: `random-${timestamp}`,
           author: 'Beauty',

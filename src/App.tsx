@@ -35,7 +35,8 @@ const App: React.FC = () => {
       const newImages: IImage[] = [];
       for (let i = 0; i < 12; i++) {
         const timestamp = Date.now() + i + Math.random();
-        const imageUrl = `https://3650000.xyz/api/?type=302&mode=${currentCategory.mode}&_t=${timestamp}`;
+        // 使用 proxy=bd (百度代理) 解决防盗链问题，并且百度代理返回的是 https 协议，解决混合内容限制
+        const imageUrl = `https://3650000.xyz/api/?type=302&mode=${currentCategory.mode}&proxy=bd&_t=${timestamp}`;
         newImages.push({
           id: `random-${timestamp}`,
           author: 'Beauty',
@@ -121,6 +122,7 @@ const App: React.FC = () => {
               alt="Beauty Image"
               className="w-full h-auto object-cover transition-transform duration-700 group-hover:scale-105"
               loading="lazy"
+              referrerPolicy="no-referrer"
             />
             <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-6">
               <div className="w-8 h-[1px] bg-white/50 mb-2"></div>
@@ -166,6 +168,7 @@ const App: React.FC = () => {
                 src={selectedImage.download_url}
                 alt="Beauty"
                 className="max-w-full max-h-[90vh] object-contain"
+                referrerPolicy="no-referrer"
               />
               <button 
                 onClick={() => setSelectedImage(null)}

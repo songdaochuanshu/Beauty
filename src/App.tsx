@@ -113,7 +113,7 @@ const App: React.FC = () => {
       </header>
 
       {/* Waterfall Layout - 使用 columns 布局 */}
-      <div className="relative columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-6">
+      <div className="relative columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-x-6">
         <AnimatePresence mode="wait">
           {isSwitching ? (
             <>

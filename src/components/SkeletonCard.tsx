@@ -7,18 +7,21 @@ interface SkeletonCardProps {
 }
 
 const SkeletonCard: React.FC<SkeletonCardProps> = ({ index = 0, width = 600, height = 400 }) => {
-  // 根据图片实际宽高比计算占位图高度
-  // 假设容器宽度为固定值，根据宽高比计算高度
-  const aspectRatio = height / width;
-  const containerWidth = 300; // Grid 单列宽度
-  const skeletonHeight = containerWidth * aspectRatio;
+  // 使用 padding-bottom 百分比来维持纵横比，这样不需要关心容器的具体宽度
+  const aspectRatio = (height / width) * 100;
+
+  // 如果没有传入宽高，则根据索引生成一些随机高度的占位图，使瀑布流看起来更自然
+  const randomHeights = [120, 150, 180, 140, 160, 130];
+  const finalPadding = (width === 600 && height === 400) 
+    ? randomHeights[index % randomHeights.length] 
+    : aspectRatio;
 
   return (
-    <div
-      className="break-inside-avoid overflow-hidden rounded-xl bg-neutral-100 animate-pulse"
-      style={{ height: `${skeletonHeight}px` }}
-    >
-      <div className="w-full h-full bg-gradient-to-b from-neutral-200 via-neutral-100 to-neutral-200" />
+    <div className="break-inside-avoid mb-6 overflow-hidden rounded-xl bg-neutral-100 animate-pulse">
+      <div 
+        style={{ paddingBottom: `${finalPadding}%` }} 
+        className="w-full bg-gradient-to-b from-neutral-200 via-neutral-100 to-neutral-200" 
+      />
     </div>
   );
 };

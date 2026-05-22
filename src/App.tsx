@@ -112,29 +112,17 @@ const App: React.FC = () => {
         />
       </header>
 
-      {/* Waterfall Layout - 使用 Grid 替代 columns */}
-      <div className="relative">
+      {/* Waterfall Layout - 使用 columns 布局 */}
+      <div className="relative columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-6">
         <AnimatePresence mode="wait">
           {isSwitching ? (
-            <motion.div
-              key="skeleton"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-            >
+            <>
               {Array.from({ length: 12 }).map((_, i) => (
                 <SkeletonCard key={i} index={i} />
               ))}
-            </motion.div>
+            </>
           ) : (
-            <motion.div
-              key="content"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-            >
+            <>
               {images.map((image, index) => (
                 <ImageCard
                   key={`${image.id}-${index}`}
@@ -146,39 +134,39 @@ const App: React.FC = () => {
               {/* 加载更多时显示占位图 */}
               {isLoadingMore &&
                 Array.from({ length: 12 }).map((_, i) => (
-                  <SkeletonCard key={`loading-${i}`} index={i} />
+                  <SkeletonCard key={`loading-${i}`} index={i} width={600} height={400} />
                 ))}
-            </motion.div>
+            </>
           )}
         </AnimatePresence>
+      </div>
 
-        {/* Loading/Error Indicator */}
-        <div ref={loaderRef} className="py-20 flex flex-col items-center justify-center">
-          {error && (
-            <div className="mb-4 text-center">
-              <p className="text-neutral-500 text-sm mb-2">{error}</p>
-              <button
-                onClick={retry}
-                className="px-4 py-2 text-xs uppercase tracking-widest text-neutral-600 border border-neutral-300 rounded-full hover:bg-neutral-50 transition-colors"
-              >
-                重试
-              </button>
-            </div>
-          )}
-          
-          {isLoading && !isLoadingMore && (
-            <div className="flex space-x-2">
-              {[0, 1, 2].map((i) => (
-                <motion.div
-                  key={i}
-                  animate={{ scale: [1, 1.5, 1], opacity: [0.3, 1, 0.3] }}
-                  transition={{ repeat: Infinity, duration: 1, delay: i * 0.2 }}
-                  className="w-2 h-2 bg-neutral-400 rounded-full"
-                />
-              ))}
-            </div>
-          )}
-        </div>
+      {/* Loading/Error Indicator */}
+      <div ref={loaderRef} className="py-20 flex flex-col items-center justify-center">
+        {error && (
+          <div className="mb-4 text-center">
+            <p className="text-neutral-500 text-sm mb-2">{error}</p>
+            <button
+              onClick={retry}
+              className="px-4 py-2 text-xs uppercase tracking-widest text-neutral-600 border border-neutral-300 rounded-full hover:bg-neutral-50 transition-colors"
+            >
+              重试
+            </button>
+          </div>
+        )}
+        
+        {isLoading && !isLoadingMore && (
+          <div className="flex space-x-2">
+            {[0, 1, 2].map((i) => (
+              <motion.div
+                key={i}
+                animate={{ scale: [1, 1.5, 1], opacity: [0.3, 1, 0.3] }}
+                transition={{ repeat: Infinity, duration: 1, delay: i * 0.2 }}
+                className="w-2 h-2 bg-neutral-400 rounded-full"
+              />
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Image Modal */}

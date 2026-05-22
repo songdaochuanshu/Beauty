@@ -29,6 +29,7 @@ const App: React.FC = () => {
   const [currentCategory, setCurrentCategory] = useState(CATEGORIES[0]);
   const [selectedImage, setSelectedImage] = useState<IImage | null>(null);
   const [isSwitching, setIsSwitching] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const pageRef = useRef(1);
   const hasMoreRef = useRef(true);
 
@@ -75,7 +76,14 @@ const App: React.FC = () => {
   }, [currentCategory.id, fetchImages]);
 
   const { loaderRef, isLoading, error, retry } = useInfiniteScroll({
-    onLoadMore: () => fetchImages(false),
+    onLoadMore: async () => {
+      setIsLoadingMore(true);
+      try {
+        await fetchImages(false);
+      } finally {
+        setIsLoadingMore(false);
+      }
+    },
     hasMore: hasMoreRef.current,
     threshold: 0.1
   });
@@ -104,7 +112,7 @@ const App: React.FC = () => {
         />
       </header>
 
-      {/* Waterfall Layout */}
+      {/* Waterfall Layout - 使用 Grid 替代 columns */}
       <div className="relative">
         <AnimatePresence mode="wait">
           {isSwitching ? (
@@ -113,7 +121,7 @@ const App: React.FC = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="columns-1 gap-6 space-y-6 sm:columns-2 lg:columns-3 xl:columns-4"
+              className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
             >
               {Array.from({ length: 12 }).map((_, i) => (
                 <SkeletonCard key={i} index={i} />
@@ -125,7 +133,7 @@ const App: React.FC = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="columns-1 gap-6 space-y-6 sm:columns-2 lg:columns-3 xl:columns-4"
+              className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
             >
               {images.map((image, index) => (
                 <ImageCard
@@ -135,6 +143,11 @@ const App: React.FC = () => {
                   onSelect={setSelectedImage}
                 />
               ))}
+              {/* 加载更多时显示占位图 */}
+              {isLoadingMore &&
+                Array.from({ length: 12 }).map((_, i) => (
+                  <SkeletonCard key={`loading-${i}`} index={i} />
+                ))}
             </motion.div>
           )}
         </AnimatePresence>
@@ -153,7 +166,7 @@ const App: React.FC = () => {
             </div>
           )}
           
-          {isLoading && (
+          {isLoading && !isLoadingMore && (
             <div className="flex space-x-2">
               {[0, 1, 2].map((i) => (
                 <motion.div

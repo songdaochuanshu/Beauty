@@ -16,14 +16,12 @@ interface IImage {
 }
 
 const CATEGORIES = [
-  { id: 'all', name: '全部', mode: '1,2,3,5,7,8,9' },
-  { id: 'weibo', name: '微博美女', mode: '1' },
-  { id: 'ins', name: 'Instagram', mode: '2' },
-  { id: 'cos', name: 'Cosplay', mode: '3' },
-  { id: 'mtcos', name: 'Mtcos', mode: '5' },
-  { id: 'legs', name: '美腿', mode: '7' },
-  { id: 'coser', name: 'Coser分类', mode: '8' },
-  { id: 'tuwan', name: '兔玩映画', mode: '9' },
+  { id: 'all', name: '全部', seed: 0 },
+  { id: 'nature', name: '自然', seed: 10 },
+  { id: 'architecture', name: '建筑', seed: 20 },
+  { id: 'animals', name: '动物', seed: 30 },
+  { id: 'people', name: '人物', seed: 40 },
+  { id: 'tech', name: '科技', seed: 50 },
 ];
 
 const App: React.FC = () => {
@@ -31,29 +29,31 @@ const App: React.FC = () => {
   const [currentCategory, setCurrentCategory] = useState(CATEGORIES[0]);
   const [selectedImage, setSelectedImage] = useState<IImage | null>(null);
   const [isSwitching, setIsSwitching] = useState(false);
+  const pageRef = useRef(1);
   const hasMoreRef = useRef(true);
 
   const fetchImages = useCallback(async (reset = false) => {
     try {
-      const newImages: IImage[] = [];
-      for (let i = 0; i < 12; i++) {
-        const timestamp = Date.now() + i + Math.random();
-        const imageUrl = `https://3650000.xyz/api/?type=302&mode=${currentCategory.mode}&proxy=wp&_t=${timestamp}`;
-        newImages.push({
-          id: `random-${timestamp}`,
-          author: 'Beauty',
-          width: 1920,
-          height: 1080,
-          url: imageUrl,
-          download_url: imageUrl
-        });
-      }
+      const page = reset ? 1 : pageRef.current;
+      const limit = 12;
       
+      // Since Picsum doesn't support categories, we offset the page by the category's "seed"
+      // to simulate different content for different categories.
+      const actualPage = page + currentCategory.seed;
+      const response = await fetch(`https://picsum.photos/v2/list?page=${actualPage}&limit=${limit}`);
+      const data: IImage[] = await response.json();
+      
+      if (data.length < limit) {
+        hasMoreRef.current = false;
+      }
+
       if (reset) {
-        setImages(newImages);
+        setImages(data);
+        pageRef.current = 2;
         hasMoreRef.current = true;
       } else {
-        setImages(prev => [...prev, ...newImages]);
+        setImages(prev => [...prev, ...data]);
+        pageRef.current += 1;
       }
     } catch (err) {
       console.error('Failed to fetch images:', err);
@@ -67,7 +67,7 @@ const App: React.FC = () => {
     setIsSwitching(true);
     setCurrentCategory(cat);
     
-    // 等待切换动画
+    // Wait for animation
     await new Promise(resolve => setTimeout(resolve, 300));
     await fetchImages(true);
     
@@ -80,7 +80,7 @@ const App: React.FC = () => {
     threshold: 0.1
   });
 
-  // 初始加载
+  // Initial load
   useEffect(() => {
     fetchImages(true);
   }, []);

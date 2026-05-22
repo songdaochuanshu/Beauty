@@ -20,8 +20,10 @@ const ImageCard: React.FC<ImageCardProps> = ({ image, index, onSelect }) => {
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.9 }}
-      whileInView={{ opacity: 1, scale: 1 }}
-      viewport={{ once: true }}
+      animate={{ opacity: 1, scale: 1 }}
+      // 移除 whileInView 以改善滚动性能
+      // whileInView={{ opacity: 1, scale: 1 }}
+      // viewport={{ once: true }}
       transition={{ duration: 0.5, delay: (index % 4) * 0.05 }}
       className="break-inside-avoid overflow-hidden rounded-xl bg-neutral-100 cursor-zoom-in group relative shadow-sm hover:shadow-xl transition-shadow duration-500"
       onClick={() => onSelect(image)}

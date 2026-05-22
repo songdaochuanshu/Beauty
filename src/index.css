@@ -12,12 +12,10 @@ body {
   overflow-x: hidden;
 }
 
-/* 优雅的平滑滚动 */
 html {
   scroll-behavior: smooth;
 }
 
-/* 隐藏滚动条但保留功能 */
 ::-webkit-scrollbar {
   width: 6px;
 }

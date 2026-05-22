@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import ImageCard from './components/ImageCard';
 import CategoryTabs from './components/CategoryTabs';
 import ImageModal from './components/ImageModal';

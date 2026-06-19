@@ -2,12 +2,10 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface IImage {
-  pid: number;
+  id: string;
   author: string;
   width: number;
   height: number;
-  title: string;
-  tags: string[];
   url: string;
   download_url: string;
 }

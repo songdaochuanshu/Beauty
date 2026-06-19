@@ -6,23 +6,47 @@ import ImageModal from './components/ImageModal';
 import SkeletonCard from './components/SkeletonCard';
 import useInfiniteScroll from './hooks/useInfiniteScroll';
 
+// Lolicon API 返回的图片数据结构
+interface ILoliconImage {
+  pid: number;
+  uid: number;
+  title: string;
+  author: string;
+  r18: boolean;
+  width: number;
+  height: number;
+  tags: string[];
+  ext: string;
+  aiType: number;
+  uploadDate: number;
+  urls: {
+    original: string;
+    regular?: string;
+    thumb?: string;
+  };
+}
+
 interface IImage {
-  id: string;
+  pid: number;
   author: string;
   width: number;
   height: number;
-  url: string;
-  download_url: string;
+  title: string;
+  tags: string[];
+  url: string; // 缩略图
+  download_url: string; // 原图
 }
 
 const CATEGORIES = [
-  { id: 'all', name: '全部', seed: 0 },
-  { id: 'nature', name: '自然', seed: 10 },
-  { id: 'architecture', name: '建筑', seed: 20 },
-  { id: 'animals', name: '动物', seed: 30 },
-  { id: 'people', name: '人物', seed: 40 },
-  { id: 'tech', name: '科技', seed: 50 },
+  { id: 'all', name: '全部', tag: '' },
+  { id: 'girl', name: '少女', tag: '少女' },
+  { id: 'blue-archive', name: '碧蓝档案', tag: 'ブルーアーカイブ' },
+  { id: 'genshin', name: '原神', tag: '原神' },
+  { id: 'honkai', name: '崩坏', tag: '崩壊' },
+  { id: 'fgo', name: 'FGO', tag: 'Fate/GrandOrder' },
 ];
+
+const LOLICON_API = 'https://api.lolicon.app/setu/v2';
 
 const App: React.FC = () => {
   const [images, setImages] = useState<IImage[]>([]);
@@ -30,31 +54,62 @@ const App: React.FC = () => {
   const [selectedImage, setSelectedImage] = useState<IImage | null>(null);
   const [isSwitching, setIsSwitching] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const pageRef = useRef(1);
+  const lastDateRef = useRef<number>(0);
   const hasMoreRef = useRef(true);
 
   const fetchImages = useCallback(async (reset = false) => {
     try {
-      const page = reset ? 1 : pageRef.current;
-      const limit = 12;
+      const params = new URLSearchParams({
+        r18: '0',
+        num: '20',
+        size: 'regular',
+      });
       
-      // Since Picsum doesn't support categories, we offset the page by the category's "seed"
-      // to simulate different content for different categories.
-      const actualPage = page + currentCategory.seed;
-      const response = await fetch(`https://picsum.photos/v2/list?page=${actualPage}&limit=${limit}`);
-      const data: IImage[] = await response.json();
+      if (currentCategory.tag) {
+        params.append('tag', currentCategory.tag);
+      }
       
-      if (data.length < limit) {
+      // 分页：用上一次的最晚上传时间戳
+      if (!reset && lastDateRef.current > 0) {
+        params.append('dateBefore', String(lastDateRef.current - 1));
+      }
+
+      const response = await fetch(`${LOLICON_API}?${params.toString()}`);
+      const data = await response.json();
+      
+      if (data.error) {
+        console.error('Lolicon API error:', data.error);
+        throw new Error(data.error);
+      }
+
+      const rawImages: ILoliconImage[] = data.data || [];
+      
+      if (rawImages.length === 0) {
         hasMoreRef.current = false;
       }
 
+      // 转换为统一格式
+      const converted: IImage[] = rawImages.map(img => ({
+        pid: img.pid,
+        author: img.author,
+        width: img.width,
+        height: img.height,
+        title: img.title,
+        tags: img.tags,
+        url: img.urls.regular || img.urls.original,
+        download_url: img.urls.original,
+      }));
+
+      // 更新分页游标
+      if (converted.length > 0) {
+        lastDateRef.current = Math.min(...converted.map(i => i.pid));
+      }
+
       if (reset) {
-        setImages(data);
-        pageRef.current = 2;
+        setImages(converted);
         hasMoreRef.current = true;
       } else {
-        setImages(prev => [...prev, ...data]);
-        pageRef.current += 1;
+        setImages(prev => [...prev, ...converted]);
       }
     } catch (err) {
       console.error('Failed to fetch images:', err);
@@ -67,6 +122,8 @@ const App: React.FC = () => {
     
     setIsSwitching(true);
     setCurrentCategory(cat);
+    lastDateRef.current = 0;
+    hasMoreRef.current = true;
     
     // Wait for animation
     await new Promise(resolve => setTimeout(resolve, 300));
@@ -125,7 +182,7 @@ const App: React.FC = () => {
             <>
               {images.map((image, index) => (
                 <ImageCard
-                  key={`${image.id}-${index}`}
+                  key={`${image.pid}-${index}`}
                   image={image}
                   index={index}
                   onSelect={setSelectedImage}

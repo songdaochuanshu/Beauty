@@ -2,10 +2,12 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 
 interface IImage {
-  id: string;
+  pid: number;
   author: string;
   width: number;
   height: number;
+  title: string;
+  tags: string[];
   url: string;
   download_url: string;
 }

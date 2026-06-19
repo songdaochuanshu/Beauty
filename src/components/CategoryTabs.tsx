@@ -3,7 +3,7 @@ import React from 'react';
 interface Category {
   id: string;
   name: string;
-  tag: string;
+  seed: number;
 }
 
 interface CategoryTabsProps {

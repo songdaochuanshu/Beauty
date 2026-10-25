@@ -20,3 +20,4 @@ yarn-unlinked.log
 yarn-cache.log
 yarn-cache-cleanup.log
 yarn-cache-prune.log
+*.tsbuildinfo
